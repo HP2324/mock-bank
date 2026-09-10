@@ -1,0 +1,16 @@
+{
+  "goal": "Open a sub-account for member 12345",
+  "provider": "anthropic",
+  "status": "success",
+  "artifact_name": "draft_open_subaccount_from_browser_discovery",
+  "output_path": "artifacts/drafts/draft_from_claude.json",
+  "trace_path": "evidence/browser-discovery-20260910-142503/trace.json",
+  "run_dir": "evidence/browser-discovery-20260910-142503",
+  "checks": [
+    "browser workflow reached confirmation checkpoint",
+    "trace converted into draft artifact",
+    "draft artifact passed production contract and guardrails"
+  ],
+  "errors": [],
+  "created_at": "2026-09-10T14:25:03"
+}

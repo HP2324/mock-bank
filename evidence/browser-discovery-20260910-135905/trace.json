@@ -1,0 +1,92 @@
+[
+  {
+    "step_id": "step_01_goto_login",
+    "action": "goto",
+    "selector": null,
+    "url": "/login",
+    "value": null,
+    "reason": "Open login page.",
+    "page_url": "http://localhost:8080/login"
+  },
+  {
+    "step_id": "step_02_fill_operatorid",
+    "action": "fill",
+    "selector": "#operatorId",
+    "url": null,
+    "value": "{{operator_id}}",
+    "reason": "Enter operator id.",
+    "page_url": "http://localhost:8080/login"
+  },
+  {
+    "step_id": "step_03_fill_password",
+    "action": "fill",
+    "selector": "#password",
+    "url": null,
+    "value": "{{password}}",
+    "reason": "Enter password.",
+    "page_url": "http://localhost:8080/login"
+  },
+  {
+    "step_id": "step_04_click_sign_in",
+    "action": "click",
+    "selector": "button:has-text('Sign in')",
+    "url": null,
+    "value": null,
+    "reason": "Submit login.",
+    "page_url": "http://localhost:8080/login"
+  },
+  {
+    "step_id": "step_05_fill_memberid",
+    "action": "fill",
+    "selector": "#memberId",
+    "url": null,
+    "value": "{{member_id}}",
+    "reason": "Enter member id.",
+    "page_url": "http://localhost:8080/members/search"
+  },
+  {
+    "step_id": "step_06_click_search_member_records",
+    "action": "click",
+    "selector": "button:has-text('Search member records')",
+    "url": null,
+    "value": null,
+    "reason": "Search member records.",
+    "page_url": "http://localhost:8080/members/search"
+  },
+  {
+    "step_id": "step_07_click_open_sub_account",
+    "action": "click",
+    "selector": "a:has-text('Open sub-account')",
+    "url": null,
+    "value": null,
+    "reason": "Open sub-account form.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts/new"
+  },
+  {
+    "step_id": "step_08_fill_productname",
+    "action": "fill",
+    "selector": "#productName",
+    "url": null,
+    "value": "{{product_name}}",
+    "reason": "Enter product name.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts/new"
+  },
+  {
+    "step_id": "step_09_fill_initialdeposit",
+    "action": "fill",
+    "selector": "#initialDeposit",
+    "url": null,
+    "value": "{{initial_deposit}}",
+    "reason": "Enter initial deposit.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts/new"
+  },
+  {
+    "step_id": "step_10_click_open_sub_account",
+    "action": "click",
+    "selector": "button:has-text('Open sub-account')",
+    "url": null,
+    "value": null,
+    "reason": "Submit sub-account form.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts"
+  }
+]

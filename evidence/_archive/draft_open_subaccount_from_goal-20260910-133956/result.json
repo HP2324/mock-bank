@@ -1,0 +1,19 @@
+{
+  "status": "failure",
+  "artifact_name": "draft_open_subaccount_from_goal",
+  "checkpoint": null,
+  "outcome": null,
+  "outputs": {},
+  "evidence": {
+    "run_dir": "evidence/draft_open_subaccount_from_goal-20260910-133956",
+    "redacted_inputs": "evidence/draft_open_subaccount_from_goal-20260910-133956/inputs.redacted.json",
+    "artifact_snapshot": "evidence/draft_open_subaccount_from_goal-20260910-133956/artifact.redacted.json",
+    "summary": "evidence/draft_open_subaccount_from_goal-20260910-133956/summary.md",
+    "result": "evidence/draft_open_subaccount_from_goal-20260910-133956/result.json"
+  },
+  "step_log": [],
+  "failure": {
+    "step": "browser_startup",
+    "message": "BrowserType.launch: Executable doesn't exist at /Users/harshitpotluri/Library/Caches/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-mac-arm64/chrome-headless-shell\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     playwright install                                     ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝"
+  }
+}

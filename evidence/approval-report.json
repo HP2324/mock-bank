@@ -1,0 +1,15 @@
+{
+  "artifact_name": "draft_open_subaccount_from_browser_discovery",
+  "source_path": "artifacts/drafts/draft_from_browser_discovery.json",
+  "output_path": "artifacts/approved/approved_browser_discovery_open_subaccount.json",
+  "status": "approved",
+  "approved_by": "Harshit",
+  "reason": "Reviewed browser-discovered trace and generated artifact.",
+  "checks": [
+    "source artifact passed production contract validation",
+    "approved artifact passed production contract validation",
+    "wrote approved artifact to artifacts/approved/approved_browser_discovery_open_subaccount.json"
+  ],
+  "errors": [],
+  "created_at": "2026-09-10T14:01:11"
+}

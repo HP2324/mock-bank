@@ -1,0 +1,75 @@
+{
+  "artifact_name": "human_approval_required",
+  "status": "handoff_required",
+  "reason": "Initial deposit is above the unattended automation threshold.",
+  "operator_instructions": "Review the high-value opening request. In this training mock, lower the Initial deposit to 100.00, submit the form again, then return to the terminal and press Enter.",
+  "resume_selector": "#confirmation-code",
+  "current_url": "http://localhost:8080/members/12345/subaccounts",
+  "outcome": {
+    "name": "human_approval_required",
+    "message": "Initial deposits over $5,000 require a human operator decision."
+  },
+  "step_log": [
+    {
+      "step_id": "open_login",
+      "action": "goto",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_operator_id",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_password",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "submit_login",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_member_id",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "search_member",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "open_subaccount_form",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_product_name",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_initial_deposit",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "submit_subaccount",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    }
+  ],
+  "created_at": "2026-09-10T13:03:39"
+}

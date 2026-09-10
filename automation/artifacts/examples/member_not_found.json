@@ -1,0 +1,118 @@
+{
+  "schema_version": "0.1",
+  "name": "member_not_found",
+  "description": "Log in, search for a missing member, and return a known business outcome.",
+  "inputs": {
+    "operator_id": "operator",
+    "password": "password",
+    "member_id": "00000"
+  },
+  "steps": [
+    {
+      "id": "open_login",
+      "action": "goto",
+      "url": "/login"
+    },
+    {
+      "id": "enter_operator_id",
+      "action": "fill",
+      "selector": "#operatorId",
+      "value": "{{operator_id}}"
+    },
+    {
+      "id": "enter_password",
+      "action": "fill",
+      "selector": "#password",
+      "value": "{{password}}"
+    },
+    {
+      "id": "submit_login",
+      "action": "click",
+      "selector": "button:has-text('Sign in')"
+    },
+    {
+      "id": "enter_member_id",
+      "action": "fill",
+      "selector": "#memberId",
+      "value": "{{member_id}}"
+    },
+    {
+      "id": "search_member",
+      "action": "click",
+      "selector": "button:has-text('Search member records')"
+    }
+  ],
+  "expected_outcomes": [
+    {
+      "name": "member_not_found",
+      "status": "business_outcome",
+      "selector": ".banner.warning",
+      "contains_text": "No member record was found",
+      "message": "The requested member does not exist."
+    }
+  ],
+  "outputs": {},
+  "version": "0.1.0",
+  "approval_state": "draft",
+  "metadata": {
+    "owner": "mock-bank-automation",
+    "app": "mock-bank",
+    "app_version": "local-dev",
+    "notes": "Production-contract mock bank artifact."
+  },
+  "input_schema": {
+    "operator_id": {
+      "type": "string",
+      "description": "Demo back-office operator username.",
+      "required": true,
+      "sensitive": false
+    },
+    "password": {
+      "type": "string",
+      "description": "Demo back-office operator password.",
+      "required": true,
+      "sensitive": true
+    },
+    "member_id": {
+      "type": "string",
+      "description": "Mock bank member identifier used by the workflow.",
+      "required": true,
+      "sensitive": false
+    }
+  },
+  "output_schema": {},
+  "safety": {
+    "allowed_actions": [
+      "goto",
+      "fill",
+      "click",
+      "wait_for_selector"
+    ],
+    "allowed_hosts": [
+      "localhost",
+      "localhost:8080",
+      "127.0.0.1",
+      "127.0.0.1:8080"
+    ],
+    "allowed_exact_paths": [
+      "/"
+    ],
+    "allowed_path_prefixes": [
+      "/login",
+      "/members",
+      "/logout",
+      "/debug",
+      "/ops",
+      "/h2-console"
+    ],
+    "risky_action_policy": "allow",
+    "risky_selectors": [
+      "button:has-text('Open sub-account')"
+    ],
+    "redact_input_keys": [
+      "password",
+      "token",
+      "secret"
+    ]
+  }
+}

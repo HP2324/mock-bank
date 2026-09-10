@@ -1,0 +1,101 @@
+[
+  {
+    "step_id": "step_01_goto_login",
+    "action": "goto",
+    "selector": null,
+    "url": "/login",
+    "value": null,
+    "reason": "Page is blank; must start by navigating to the login page.",
+    "page_url": "http://localhost:8080/login"
+  },
+  {
+    "step_id": "step_02_fill_operatorid",
+    "action": "fill",
+    "selector": "#operatorId",
+    "url": null,
+    "value": "operator",
+    "reason": "Enter operator id to begin login.",
+    "page_url": "http://localhost:8080/login"
+  },
+  {
+    "step_id": "step_03_fill_password",
+    "action": "fill",
+    "selector": "#password",
+    "url": null,
+    "value": "password",
+    "reason": "Enter password to continue login process.",
+    "page_url": "http://localhost:8080/login"
+  },
+  {
+    "step_id": "step_04_click_sign_in",
+    "action": "click",
+    "selector": "button:has-text('Sign in')",
+    "url": null,
+    "value": null,
+    "reason": "Credentials entered; submit login form.",
+    "page_url": "http://localhost:8080/login"
+  },
+  {
+    "step_id": "step_05_fill_memberid",
+    "action": "fill",
+    "selector": "#memberId",
+    "url": null,
+    "value": "12345",
+    "reason": "Enter the member ID to search for the member's records.",
+    "page_url": "http://localhost:8080/members/search"
+  },
+  {
+    "step_id": "step_06_click_search_member_records",
+    "action": "click",
+    "selector": "button:has-text('Search member records')",
+    "url": null,
+    "value": null,
+    "reason": "Member ID entered; submit search to locate member 12345's records.",
+    "page_url": "http://localhost:8080/members/12345"
+  },
+  {
+    "step_id": "step_07_click_open_sub_account",
+    "action": "click",
+    "selector": "a:has-text('Open sub-account')",
+    "url": null,
+    "value": null,
+    "reason": "Navigate to the sub-account creation form for member 12345.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts/new"
+  },
+  {
+    "step_id": "step_08_fill_productname",
+    "action": "fill",
+    "selector": "#productName",
+    "url": null,
+    "value": "Savings Plus",
+    "reason": "Enter the product name for the new sub-account.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts/new"
+  },
+  {
+    "step_id": "step_09_fill_initialdeposit",
+    "action": "fill",
+    "selector": "#initialDeposit",
+    "url": null,
+    "value": "100.00",
+    "reason": "Enter the initial deposit amount for the new sub-account.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts/new"
+  },
+  {
+    "step_id": "step_10_click_open_sub_account",
+    "action": "click",
+    "selector": "button:has-text('Open sub-account')",
+    "url": null,
+    "value": null,
+    "reason": "Product name and initial deposit have been entered; submit the form to open the sub-account.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts"
+  },
+  {
+    "step_id": "step_11_wait_for_selector_confirmation_code",
+    "action": "wait_for_selector",
+    "selector": "#confirmation-code",
+    "url": null,
+    "value": null,
+    "reason": "Confirm that the confirmation code element is visible on the Sub-Account Confirmation page before finishing.",
+    "page_url": "http://localhost:8080/members/12345/subaccounts"
+  }
+]

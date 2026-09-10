@@ -1,0 +1,17 @@
+{
+  "goal": "Open a sub-account for member 12345",
+  "provider": "local",
+  "artifact_name": "draft_open_subaccount_from_goal",
+  "status": "accepted",
+  "checks": [
+    "candidate matches CapabilityArtifact schema",
+    "schema version accepted",
+    "step count accepted",
+    "completion condition exists",
+    "all steps passed replay guardrails",
+    "handoff contract accepted",
+    "wrote draft artifact to artifacts/drafts/draft_from_goal.json"
+  ],
+  "errors": [],
+  "created_at": "2026-09-10T13:41:40"
+}

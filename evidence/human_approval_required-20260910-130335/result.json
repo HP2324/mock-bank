@@ -1,0 +1,101 @@
+{
+  "status": "success",
+  "artifact_name": "human_approval_required",
+  "checkpoint": "CONFIRM-SUBACCOUNT-CREATED",
+  "outcome": null,
+  "outputs": {
+    "member_id": "12345",
+    "member_name": "Jordan Lee",
+    "new_account_number": "SAV-345-4",
+    "product": "Savings Plus",
+    "opening_balance": "$4,999.99"
+  },
+  "evidence": {
+    "run_dir": "evidence/human_approval_required-20260910-130335",
+    "redacted_inputs": "evidence/human_approval_required-20260910-130335/inputs.redacted.json",
+    "artifact_snapshot": "evidence/human_approval_required-20260910-130335/artifact.redacted.json",
+    "summary": "evidence/human_approval_required-20260910-130335/summary.md",
+    "handoff_request": "evidence/human_approval_required-20260910-130335/handoff.json",
+    "handoff_screenshot": "evidence/human_approval_required-20260910-130335/handoff.png",
+    "handoff_html": "evidence/human_approval_required-20260910-130335/handoff.html",
+    "screenshot": "evidence/human_approval_required-20260910-130335/final.png",
+    "html": "evidence/human_approval_required-20260910-130335/final.html",
+    "step_log": "evidence/human_approval_required-20260910-130335/steps.json",
+    "result": "evidence/human_approval_required-20260910-130335/result.json"
+  },
+  "step_log": [
+    {
+      "step_id": "open_login",
+      "action": "goto",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_operator_id",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_password",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "submit_login",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_member_id",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "search_member",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "open_subaccount_form",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_product_name",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_initial_deposit",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "submit_subaccount",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "handoff_pause",
+      "action": "human_handoff",
+      "status": "completed",
+      "detail": "Replay paused for human operator intervention."
+    },
+    {
+      "step_id": "handoff_resume",
+      "action": "manual_resume",
+      "status": "completed",
+      "detail": "Human operator resumed replay."
+    }
+  ],
+  "failure": null
+}

@@ -1,0 +1,34 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Human Approval Required</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="topbar">
+    <table><tbody><tr>
+      <td><strong>Northstar Credit Union - Staff Console</strong></td>
+      <td style="text-align:right">Operator: operator &nbsp;|&nbsp; <a href="/logout">Sign out</a></td>
+    </tr></tbody></table>
+  </div>
+  <main class="shell"><section class="panel">
+  <h1>Open sub-account</h1>
+  <div class="panel-body"><div class="banner warning" role="alert">Human approval required. Initial deposits over $5,000 are treated as risky actions.</div><table class="field-table">
+  <tbody><tr><th>Member ID</th><td>12345</td></tr>
+  <tr><th>Name</th><td>Jordan Lee</td></tr>
+  <tr><th>Status</th><td>Active</td></tr>
+</tbody></table>
+<form method="post" action="/members/12345/subaccounts">
+  <table class="field-table">
+    <tbody><tr><th><label for="productName">Product name</label></th><td><input id="productName" name="productName" value="Savings Plus" placeholder="Savings Plus" style=""></td></tr>
+    <tr><th><label for="initialDeposit">Initial deposit</label></th><td><input id="initialDeposit" name="initialDeposit" value="5000.01" placeholder="100.00" style=""></td></tr>
+    <tr><th>Risk rule</th><td><span class="muted">Deposits over $5,000 require human approval.</span></td></tr>
+    <tr><th></th><td><button type="submit">Open sub-account</button> <a class="button secondary" href="/members/12345">Cancel</a></td></tr>
+  </tbody></table>
+</form>
+</div>
+</section>
+</main>
+
+
+</body></html>

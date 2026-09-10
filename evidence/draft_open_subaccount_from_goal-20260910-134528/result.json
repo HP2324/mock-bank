@@ -1,0 +1,86 @@
+{
+  "status": "success",
+  "artifact_name": "draft_open_subaccount_from_goal",
+  "checkpoint": "CONFIRM-SUBACCOUNT-CREATED",
+  "outcome": null,
+  "outputs": {
+    "member_id": "12345",
+    "member_name": "Jordan Lee",
+    "new_account_number": "SAV-345-5",
+    "product": "Savings Plus",
+    "opening_balance": "$100.00"
+  },
+  "evidence": {
+    "run_dir": "evidence/draft_open_subaccount_from_goal-20260910-134528",
+    "redacted_inputs": "evidence/draft_open_subaccount_from_goal-20260910-134528/inputs.redacted.json",
+    "artifact_snapshot": "evidence/draft_open_subaccount_from_goal-20260910-134528/artifact.redacted.json",
+    "summary": "evidence/draft_open_subaccount_from_goal-20260910-134528/summary.md",
+    "screenshot": "evidence/draft_open_subaccount_from_goal-20260910-134528/final.png",
+    "html": "evidence/draft_open_subaccount_from_goal-20260910-134528/final.html",
+    "step_log": "evidence/draft_open_subaccount_from_goal-20260910-134528/steps.json",
+    "result": "evidence/draft_open_subaccount_from_goal-20260910-134528/result.json"
+  },
+  "step_log": [
+    {
+      "step_id": "open_login",
+      "action": "goto",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_operator_id",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_password",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "submit_login",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_member_id",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "search_member",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "open_subaccount_form",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_product_name",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "enter_initial_deposit",
+      "action": "fill",
+      "status": "completed",
+      "detail": ""
+    },
+    {
+      "step_id": "submit_subaccount",
+      "action": "click",
+      "status": "completed",
+      "detail": ""
+    }
+  ],
+  "failure": null
+}

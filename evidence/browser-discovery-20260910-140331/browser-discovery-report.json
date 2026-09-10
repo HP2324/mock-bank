@@ -1,0 +1,14 @@
+{
+  "goal": "Open a sub-account for member 12345",
+  "provider": "openai",
+  "status": "failure",
+  "artifact_name": "",
+  "output_path": "",
+  "trace_path": "evidence/browser-discovery-20260910-140331/trace.json",
+  "run_dir": "evidence/browser-discovery-20260910-140331",
+  "checks": [],
+  "errors": [
+    "OPENAI_API_KEY is required when browser discovery provider is openai."
+  ],
+  "created_at": "2026-09-10T14:03:31"
+}

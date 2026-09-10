@@ -1,0 +1,62 @@
+[
+  {
+    "step_id": "open_login",
+    "action": "goto",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "enter_operator_id",
+    "action": "fill",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "enter_password",
+    "action": "fill",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "submit_login",
+    "action": "click",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "enter_member_id",
+    "action": "fill",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "search_member",
+    "action": "click",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "open_subaccount_form",
+    "action": "click",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "enter_product_name",
+    "action": "fill",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "enter_initial_deposit",
+    "action": "fill",
+    "status": "completed",
+    "detail": ""
+  },
+  {
+    "step_id": "submit_subaccount",
+    "action": "click",
+    "status": "completed",
+    "detail": ""
+  }
+]

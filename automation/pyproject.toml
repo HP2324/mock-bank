@@ -1,0 +1,21 @@
+[project]
+name = "mock-bank-automation"
+version = "0.1.0"
+description = "Deterministic replay automation layer for the mock banking app."
+requires-python = ">=3.11"
+dependencies = [
+    "playwright>=1.48.0",
+    "pydantic>=2.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+]
+
+[project.scripts]
+mock-bank-automation = "mock_bank_automation.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

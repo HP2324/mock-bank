@@ -1,0 +1,112 @@
+{
+  "schema_version": "0.1",
+  "name": "permission_denied",
+  "description": "Log in, open a restricted member, and detect permission denial.",
+  "inputs": {
+    "operator_id": "operator",
+    "password": "password",
+    "member_id": "77777"
+  },
+  "steps": [
+    {
+      "id": "open_login",
+      "action": "goto",
+      "url": "/login"
+    },
+    {
+      "id": "enter_operator_id",
+      "action": "fill",
+      "selector": "#operatorId",
+      "value": "{{operator_id}}"
+    },
+    {
+      "id": "enter_password",
+      "action": "fill",
+      "selector": "#password",
+      "value": "{{password}}"
+    },
+    {
+      "id": "submit_login",
+      "action": "click",
+      "selector": "button:has-text('Sign in')"
+    },
+    {
+      "id": "open_restricted_subaccount_url",
+      "action": "goto",
+      "url": "/members/{{member_id}}/subaccounts/new"
+    }
+  ],
+  "expected_outcomes": [
+    {
+      "name": "permission_denied",
+      "status": "business_outcome",
+      "selector": ".banner.error",
+      "contains_text": "Permission denied",
+      "message": "Restricted members require supervisor override before opening sub-accounts."
+    }
+  ],
+  "outputs": {},
+  "version": "0.1.0",
+  "approval_state": "draft",
+  "metadata": {
+    "owner": "mock-bank-automation",
+    "app": "mock-bank",
+    "app_version": "local-dev",
+    "notes": "Production-contract mock bank artifact."
+  },
+  "input_schema": {
+    "operator_id": {
+      "type": "string",
+      "description": "Demo back-office operator username.",
+      "required": true,
+      "sensitive": false
+    },
+    "password": {
+      "type": "string",
+      "description": "Demo back-office operator password.",
+      "required": true,
+      "sensitive": true
+    },
+    "member_id": {
+      "type": "string",
+      "description": "Mock bank member identifier used by the workflow.",
+      "required": true,
+      "sensitive": false
+    }
+  },
+  "output_schema": {},
+  "safety": {
+    "allowed_actions": [
+      "goto",
+      "fill",
+      "click",
+      "wait_for_selector"
+    ],
+    "allowed_hosts": [
+      "localhost",
+      "localhost:8080",
+      "127.0.0.1",
+      "127.0.0.1:8080"
+    ],
+    "allowed_exact_paths": [
+      "/"
+    ],
+    "allowed_path_prefixes": [
+      "/login",
+      "/members",
+      "/logout",
+      "/debug",
+      "/ops",
+      "/h2-console"
+    ],
+    "risky_action_policy": "allow",
+    "risky_selectors": [
+      "button:has-text('Open sub-account')"
+    ],
+    "redact_input_keys": [
+      "password",
+      "token",
+      "secret"
+    ]
+  }
+}

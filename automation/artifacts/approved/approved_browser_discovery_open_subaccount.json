@@ -1,0 +1,228 @@
+{
+  "schema_version": "0.1",
+  "name": "draft_open_subaccount_from_browser_discovery",
+  "description": "Draft artifact recorded from browser discovery goal: Open a sub-account for member 12345",
+  "version": "0.1.0",
+  "approval_state": "approved",
+  "metadata": {
+    "owner": "mock-bank-automation",
+    "app": "mock-bank",
+    "app_version": "local-dev",
+    "notes": "Controlled LLM discovery draft for goal: Open a sub-account for member 12345\nApproved by Harshit: Reviewed browser-discovered trace and generated artifact."
+  },
+  "input_schema": {
+    "operator_id": {
+      "type": "string",
+      "description": "Demo back-office operator username.",
+      "required": true,
+      "sensitive": false
+    },
+    "password": {
+      "type": "string",
+      "description": "Demo back-office operator password.",
+      "required": true,
+      "sensitive": true
+    },
+    "member_id": {
+      "type": "string",
+      "description": "Mock bank member identifier used by the workflow.",
+      "required": true,
+      "sensitive": false
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Sub-account product name entered in the form.",
+      "required": true,
+      "sensitive": false
+    },
+    "initial_deposit": {
+      "type": "string",
+      "description": "Initial deposit amount entered for the new sub-account.",
+      "required": true,
+      "sensitive": false
+    }
+  },
+  "output_schema": {
+    "member_id": {
+      "type": "string",
+      "description": "Member identifier shown on the confirmation page.",
+      "required": true,
+      "sensitive": false
+    },
+    "member_name": {
+      "type": "string",
+      "description": "Member name shown on the confirmation page.",
+      "required": true,
+      "sensitive": false
+    },
+    "new_account_number": {
+      "type": "string",
+      "description": "New sub-account number produced by the mock bank.",
+      "required": true,
+      "sensitive": false
+    },
+    "product": {
+      "type": "string",
+      "description": "Product name confirmed by the mock bank.",
+      "required": true,
+      "sensitive": false
+    },
+    "opening_balance": {
+      "type": "string",
+      "description": "Opening balance confirmed by the mock bank.",
+      "required": true,
+      "sensitive": false
+    }
+  },
+  "inputs": {
+    "operator_id": "operator",
+    "password": "password",
+    "member_id": "12345",
+    "product_name": "Savings Plus",
+    "initial_deposit": "100.00"
+  },
+  "steps": [
+    {
+      "id": "step_01_goto_login",
+      "action": "goto",
+      "selector": null,
+      "url": "/login",
+      "value": null,
+      "locator": null,
+      "description": "Open login page."
+    },
+    {
+      "id": "step_02_fill_operatorid",
+      "action": "fill",
+      "selector": "#operatorId",
+      "url": null,
+      "value": "{{operator_id}}",
+      "locator": null,
+      "description": "Enter operator id."
+    },
+    {
+      "id": "step_03_fill_password",
+      "action": "fill",
+      "selector": "#password",
+      "url": null,
+      "value": "{{password}}",
+      "locator": null,
+      "description": "Enter password."
+    },
+    {
+      "id": "step_04_click_sign_in",
+      "action": "click",
+      "selector": "button:has-text('Sign in')",
+      "url": null,
+      "value": null,
+      "locator": null,
+      "description": "Submit login."
+    },
+    {
+      "id": "step_05_fill_memberid",
+      "action": "fill",
+      "selector": "#memberId",
+      "url": null,
+      "value": "{{member_id}}",
+      "locator": null,
+      "description": "Enter member id."
+    },
+    {
+      "id": "step_06_click_search_member_records",
+      "action": "click",
+      "selector": "button:has-text('Search member records')",
+      "url": null,
+      "value": null,
+      "locator": null,
+      "description": "Search member records."
+    },
+    {
+      "id": "step_07_click_open_sub_account",
+      "action": "click",
+      "selector": "a:has-text('Open sub-account')",
+      "url": null,
+      "value": null,
+      "locator": null,
+      "description": "Open sub-account form."
+    },
+    {
+      "id": "step_08_fill_productname",
+      "action": "fill",
+      "selector": "#productName",
+      "url": null,
+      "value": "{{product_name}}",
+      "locator": null,
+      "description": "Enter product name."
+    },
+    {
+      "id": "step_09_fill_initialdeposit",
+      "action": "fill",
+      "selector": "#initialDeposit",
+      "url": null,
+      "value": "{{initial_deposit}}",
+      "locator": null,
+      "description": "Enter initial deposit."
+    },
+    {
+      "id": "step_10_click_open_sub_account",
+      "action": "click",
+      "selector": "button:has-text('Open sub-account')",
+      "url": null,
+      "value": null,
+      "locator": null,
+      "description": "Submit sub-account form."
+    }
+  ],
+  "checkpoint": {
+    "selector": "#confirmation-code",
+    "text": "CONFIRM-SUBACCOUNT-CREATED"
+  },
+  "expected_outcomes": [],
+  "handoff": {
+    "enabled": false,
+    "reason": "Human intervention required.",
+    "resume_selector": null,
+    "operator_instructions": "Review the live browser state, take the required manual action, then resume automation."
+  },
+  "safety": {
+    "allowed_actions": [
+      "goto",
+      "fill",
+      "click",
+      "wait_for_selector"
+    ],
+    "allowed_hosts": [
+      "localhost",
+      "localhost:8080",
+      "127.0.0.1",
+      "127.0.0.1:8080"
+    ],
+    "allowed_exact_paths": [
+      "/"
+    ],
+    "allowed_path_prefixes": [
+      "/login",
+      "/members",
+      "/logout",
+      "/debug",
+      "/ops",
+      "/h2-console"
+    ],
+    "risky_action_policy": "allow",
+    "risky_selectors": [
+      "button:has-text('Open sub-account')"
+    ],
+    "redact_input_keys": [
+      "password",
+      "token",
+      "secret"
+    ]
+  },
+  "outputs": {
+    "member_id": "//tr[th[normalize-space()='Member ID']]/td",
+    "member_name": "//tr[th[normalize-space()='Member name']]/td",
+    "new_account_number": "//tr[th[normalize-space()='New account number']]/td",
+    "product": "//tr[th[normalize-space()='Product']]/td",
+    "opening_balance": "//tr[th[normalize-space()='Opening balance']]/td"
+  }
+}
