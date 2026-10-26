@@ -5,7 +5,7 @@
 #   docker compose down -v                  # stop and reset all data back to the seed state
 #
 # Ports bind to 127.0.0.1 only, so on a cloud VM nothing is public unless you choose to expose
-# it (see deploy/ec2/README.md).
+# it (see docs/deploy-ec2.md).
 name: mock-bank
 
 services:
@@ -55,7 +55,9 @@ services:
       start_period: 15s
 
   mock-bank:
-    build: .
+    build:
+      context: .
+      dockerfile: services/bank-api/Dockerfile
     image: mock-bank:local
     depends_on:
       postgres:
@@ -70,7 +72,7 @@ services:
       - "127.0.0.1:8080:8080"
 
   audit-consumer:
-    build: ./audit-consumer
+    build: ./services/audit-consumer
     image: mock-bank-audit-consumer:local
     depends_on:
       postgres:

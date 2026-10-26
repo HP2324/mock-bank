@@ -1,0 +1,10 @@
+package io.github.hp2324.mockbank.model;
+
+public enum AuditEventType {
+    OPERATOR_SIGNED_IN,
+    OPERATOR_SIGN_IN_FAILED,
+    OPERATOR_SIGNED_OUT,
+    SUBACCOUNT_OPENED,
+    HUMAN_APPROVAL_REQUIRED,
+    PERMISSION_DENIED
+}

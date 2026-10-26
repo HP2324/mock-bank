@@ -1,10 +1,12 @@
+# Build context for services/bank-api/Dockerfile is the repository root; it only needs
+# frontend/ and services/bank-api/.
 .git
 .idea
 **/.DS_Store
 **/target
 frontend/node_modules
 frontend/dist
+services/audit-consumer
 automation
-evidence
-audit-consumer
+docs
 deploy
