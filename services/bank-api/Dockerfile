@@ -3,7 +3,7 @@
 #   docker build -f services/bank-api/Dockerfile .
 
 # 1) React frontend -> static files
-FROM node:22-alpine AS frontend
+FROM node:26-alpine AS frontend
 WORKDIR /frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --no-audit --no-fund
