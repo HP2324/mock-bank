@@ -21,7 +21,7 @@ jobs:
           java-version: "17"
           cache: maven
       # Testcontainers starts PostgreSQL and Kafka using the runner's Docker engine.
-      - run: mvn -B -DskipFrontend verify
+      - run: ./mvnw -B -DskipFrontend verify
 
   audit-consumer:
     name: audit-consumer (unit + Testcontainers)
@@ -33,7 +33,7 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
-      - run: mvn -B -f audit-consumer/pom.xml verify
+      - run: ./mvnw -B -f audit-consumer/pom.xml verify
 
   frontend:
     name: frontend (Vitest + build)

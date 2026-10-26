@@ -11,7 +11,7 @@ This first iteration implements deterministic replay from a hand-written JSON ar
 
 ## Setup
 
-From `/Users/harshitpotluri/mock-bank`:
+From the repository root:
 
 ```bash
 cd automation
@@ -26,16 +26,16 @@ PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers python -m playwright install chrom
 In another terminal:
 
 ```bash
-cd /Users/harshitpotluri/mock-bank
+# from the repository root
 docker compose up -d --build --wait    # PostgreSQL, Kafka, mock-bank on :8080, audit-consumer on :8081
 ```
 
-Or `docker compose up -d --wait postgres kafka` and then `mvn spring-boot:run` to run the app from source.
+Or `docker compose up -d --wait postgres kafka` and then `./mvnw spring-boot:run` to run the app from source.
 
 ## Replay the happy path
 
 ```bash
-cd /Users/harshitpotluri/mock-bank/automation
+cd automation
 source .venv/bin/activate
 PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation replay artifacts/examples/open_subaccount_happy_path.json \
   --base-url http://localhost:8080 \

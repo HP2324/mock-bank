@@ -1,5 +1,7 @@
 # Computer-Use Automation System
 
+[![CI](https://github.com/HP2324/mock-bank/actions/workflows/ci.yml/badge.svg)](https://github.com/HP2324/mock-bank/actions/workflows/ci.yml)
+
 An LLM **discovers** a back-office UI workflow once against a live application. The system
 records it as a **typed, versioned capability artifact**, then **replays that artifact
 deterministically without the LLM**. Replay comes with an explicit error taxonomy, safety
@@ -97,7 +99,7 @@ The first build takes a few minutes. `--wait` returns once all four services rep
 | Tool | Needed for |
 |---|---|
 | Docker Desktop / Docker Engine | The stack, and the Testcontainers integration tests |
-| Java 17+ and Maven 3.9+ | Building or running the Java services outside Docker |
+| Java 17+ | Building or running the Java services outside Docker. Maven is optional: `./mvnw` downloads the pinned version (3.9.9). |
 | Node.js 22 | Optional. Only for the Vite dev server or running `npm test` directly. Maven downloads its own Node to build the frontend. |
 | Python 3.11+ | The automation layer |
 | `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` | Only for a real LLM discovery run. Everything else runs offline. |
@@ -120,8 +122,8 @@ docker compose down -v                  # stop and reset to the Flyway seed data
 
 ```bash
 docker compose up -d --wait postgres kafka
-mvn spring-boot:run                     # builds the React app into the jar, serves :8080
-mvn -f audit-consumer/pom.xml spring-boot:run   # optional, serves :8081
+./mvnw spring-boot:run                   # builds the React app into the jar, serves :8080
+./mvnw -f audit-consumer/pom.xml spring-boot:run   # optional, serves :8081
 ```
 
 **From IntelliJ:** running `MockBankApplication` also works. The IDE skips Maven's frontend
@@ -347,9 +349,9 @@ this contract drifts.
 
 | Suite | Command | What it covers |
 |---|---|---|
-| mock-bank unit | `mvn -DskipFrontend test` | Sub-account rules, account numbering, JPA service (Mockito), Kafka publisher, MockMvc controller tests |
-| mock-bank integration | `mvn -DskipFrontend verify` | Testcontainers PostgreSQL + Kafka: Flyway migrations and constraints, JPA, reporting SQL, full API flow, publish-after-commit |
-| audit-consumer | `mvn -f audit-consumer/pom.xml verify` | Payload parsing, REST API, and with Testcontainers: idempotent storage, summary SQL, dead-letter routing |
+| mock-bank unit | `./mvnw -DskipFrontend test` | Sub-account rules, account numbering, JPA service (Mockito), Kafka publisher, MockMvc controller tests |
+| mock-bank integration | `./mvnw -DskipFrontend verify` | Testcontainers PostgreSQL + Kafka: Flyway migrations and constraints, JPA, reporting SQL, full API flow, publish-after-commit |
+| audit-consumer | `./mvnw -f audit-consumer/pom.xml verify` | Payload parsing, REST API, and with Testcontainers: idempotent storage, summary SQL, dead-letter routing |
 | frontend | `cd frontend && npm test` | API client, formatting, DOM contract used by the artifacts |
 | automation | `cd automation && pytest` | Artifact contract, guardrails, discovery, replay, approval, evidence, settle wait |
 | end to end | `python automation/scripts/replay_smoke.py` | Every saved artifact against the running stack |
@@ -394,7 +396,7 @@ only SSH, and you reach the app through an SSH tunnel. See
 
 | Symptom | Fix |
 |---|---|
-| `No static resource index.html` | The app was built without the frontend. Run `cd frontend && npm run build`, or start it with `mvn spring-boot:run`. |
+| `No static resource index.html` | The app was built without the frontend. Run `cd frontend && npm run build`, or start it with `./mvnw spring-boot:run`. |
 | Page doesn't match recent code / two apps on 8080 | `docker compose stop mock-bank` before running from Maven or IntelliJ |
 | `Connection refused` to 5432 or 9092 | `docker compose up -d --wait postgres kafka` |
 | Integration tests can't find Docker | Start Docker Desktop. Testcontainers needs a running engine. |
@@ -411,3 +413,9 @@ only SSH, and you reach the app through an SSH tunnel. See
   requires password-like inputs to be marked sensitive. `.env` is git-ignored.
 - **Demo only:** the sign-in is a fixed demo account. No real bank, credentials or personal
   data are used anywhere.
+
+---
+
+## License
+
+[MIT](LICENSE)
