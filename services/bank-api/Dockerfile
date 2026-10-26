@@ -11,7 +11,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # 2) Spring Boot jar with the frontend bundled under /static
-FROM maven:3.9-eclipse-temurin-17 AS backend
+FROM maven:3.9-eclipse-temurin-26 AS backend
 WORKDIR /build
 COPY services/bank-api/pom.xml ./
 RUN mvn -B -q -DskipFrontend dependency:go-offline
