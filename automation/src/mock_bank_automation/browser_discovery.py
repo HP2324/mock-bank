@@ -17,7 +17,7 @@ from pydantic import BaseModel, Field, ValidationError
 from .artifact import ArtifactField, CapabilityArtifact, Checkpoint, ReplayStep
 from .discovery import DiscoveryValidationError, _response_output_text, _validate_discovered_artifact
 from .guardrails import GuardrailViolation, enforce_step_policy
-from .replay import _redact_text, _render, redact_inputs
+from .replay import APP_SETTLED_SCRIPT, _redact_text, _render, redact_inputs
 
 
 BROWSER_DISCOVERY_SYSTEM_PROMPT = """You are controlling a mock bank back-office UI to complete a workflow once.
@@ -353,6 +353,7 @@ def _execute_browser_action(page: Page, step: ReplayStep, base_url: str) -> None
             if not step.url:
                 raise BrowserDiscoveryError(f"{step.id} is missing url.")
             page.goto(urljoin(base_url.rstrip("/") + "/", _render(step.url, DEFAULT_DISCOVERY_INPUTS).lstrip("/")))
+            _wait_until_settled(page, step)
             return
         if not step.selector:
             raise BrowserDiscoveryError(f"{step.id} is missing selector.")
@@ -365,6 +366,15 @@ def _execute_browser_action(page: Page, step: ReplayStep, base_url: str) -> None
             locator.wait_for(state="visible")
         else:
             raise BrowserDiscoveryError(f"Unsupported browser discovery action {step.action!r}.")
+    except PlaywrightError as exc:
+        raise BrowserDiscoveryError(f"{step.id} failed: {exc}") from exc
+    _wait_until_settled(page, step)
+
+
+def _wait_until_settled(page: Page, step: ReplayStep) -> None:
+    # Observe the page only after the app has rendered the result of this action.
+    try:
+        page.wait_for_function(APP_SETTLED_SCRIPT, timeout=10_000)
     except PlaywrightError as exc:
         raise BrowserDiscoveryError(f"{step.id} failed: {exc}") from exc
 

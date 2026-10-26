@@ -6,10 +6,11 @@ artifact deterministically without the LLM** — with an explicit error taxonomy
 guardrails (allowlist + redaction), and a human-in-the-loop handoff that transfers control on
 the *same* live session.
 
-The concrete target surface is a **mock retail-bank back office** (a small Spring Boot app that
-behaves like a legacy server-rendered tool: full-page reloads, table markup, simulated runtime
-errors). The exercised goal is *"open a new sub-account for a member and reach the confirmation
-screen."*
+The concrete target surface is a **mock retail-bank back office**: a Spring Boot JSON API on
+PostgreSQL (Flyway migrations) with a React single-page frontend, which publishes every audit-log
+event to Kafka for a small consumer service. It keeps the table markup and simulated runtime
+errors of a legacy back-office tool. The exercised goal is *"open a new sub-account for a member
+and reach the confirmation screen."*
 
 - **Design write-up:** [`REPORT.md`](REPORT.md) (architecture, artifact schema, determinism &
   error handling, heterogeneity/multi-tenant, escalation & handoff, safety, cuts).
@@ -38,14 +39,35 @@ screen."*
     artifacts/{examples,drafts,approved}/   saved capability artifacts
     tests/                     pytest suite
     README.md                  detailed command reference
-/src, /pom.xml        ← the mock bank Spring Boot app (the target surface)
+/src, /pom.xml        ← the mock bank Spring Boot API (the target surface)
+    src/main/resources/db/migration/   Flyway migrations (schema, seed data, indexes)
+    .../reporting/ReportingRepository  hand-written SQL reports (joins + aggregates)
+    .../audit/                         audit events → Kafka after commit
+/frontend/            ← React + Vite staff console (served by Spring Boot on :8080)
+/audit-consumer/      ← Spring Boot Kafka consumer; stores audit events in its own database
+/docker-compose.yml   ← PostgreSQL, Kafka, mock-bank, audit-consumer
+/.github/workflows/   ← CI: unit + Testcontainers tests, frontend, pytest, compose + replay e2e
+/deploy/ec2/          ← running the stack on an Ubuntu EC2 instance
+```
+
+### How the pieces fit
+
+```
+React SPA ──/api──▶ mock-bank (Spring Boot) ──JPA/JDBC──▶ PostgreSQL  (db: mockbank, Flyway)
+                         │ audit row committed
+                         ▼
+                   Kafka topic mockbank.audit-events ──▶ audit-consumer ──▶ PostgreSQL (db: audit_consumer)
+                                                              └─ malformed messages ──▶ mockbank.audit-events.DLT
 ```
 
 ---
 
 ## Prerequisites
 
-- **Java 17+** and **Maven** (for the mock bank app).
+- **Docker Desktop** (or Docker Engine on Linux) — runs PostgreSQL and Kafka, and the
+  Testcontainers integration tests.
+- **Java 17+** and **Maven** (for the mock bank app). Node.js is optional: Maven downloads its own
+  copy to build the frontend; install Node 22 only if you want the Vite dev server.
 - **Python 3.11+** (for the automation layer).
 - Model API access is needed **only** for a real LLM discovery run:
   `ANTHROPIC_API_KEY` (Claude) or `OPENAI_API_KEY` (OpenAI). Everything else — including a full
@@ -55,14 +77,30 @@ screen."*
 
 ## Setup
 
-**1. Start the target app** (terminal 1):
+**1. Start the target app.** Either run everything in Docker:
 
 ```bash
 cd mock-bank            # repo root
-mvn spring-boot:run
-# serves http://localhost:8080  (in-memory H2, re-seeded on every start)
-# demo login:  operator / password
+docker compose up -d --build --wait
+# http://localhost:8080  staff console     demo login: operator / password
+# http://localhost:8081  audit-consumer    e.g. /api/events/summary
 ```
+
+…or run only PostgreSQL and Kafka in Docker and the app from Maven (terminal 1):
+
+```bash
+docker compose up -d --wait postgres kafka
+mvn spring-boot:run     # builds the React app into the jar's static files, serves :8080
+```
+
+Running `MockBankApplication` from IntelliJ also works: the IDE skips the Maven frontend step,
+so the app serves the last build in `frontend/dist` instead (`cd frontend && npm run build` to
+refresh it). Stop the Docker copy first (`docker compose stop mock-bank`) so only one app owns
+port 8080.
+
+To work on the UI with hot reload, also run `cd frontend && npm install && npm run dev` and open
+http://localhost:5173 (API calls are proxied to :8080). Data now persists in the `postgres-data`
+volume; `docker compose down -v` resets everything to the Flyway seed data.
 
 **2. Set up the automation layer** (terminal 2):
 
@@ -188,15 +226,31 @@ mock-bank-automation replay artifacts/examples/human_approval_required.json \
 cd mock-bank/automation && source .venv/bin/activate
 pytest                       # artifact contract, guardrails, discovery, replay, approval, evidence
 
-cd mock-bank && mvn test     # mock bank app controller/service tests
+cd mock-bank
+mvn -DskipFrontend test      # unit tests: policy, service, Kafka publisher, MockMvc controllers
+mvn -DskipFrontend verify    # + Testcontainers ITs: Flyway, JPA, reporting SQL, API, Kafka publishing
+mvn -f audit-consumer/pom.xml verify   # consumer unit tests + Kafka/PostgreSQL Testcontainers ITs
+cd frontend && npm test      # Vitest: API client, formatting, DOM contract the artifacts rely on
+
+# With the stack running: replay every saved artifact and check its expected outcome
+cd automation && PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers python scripts/replay_smoke.py
 ```
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs all of the above on Ubuntu,
+then starts the Docker Compose stack and replays the artifacts against it with Chromium.
 
 ---
 
 ## Notes
 
-- The app uses an in-memory H2 database (`jdbc:h2:mem:mockbank`) re-seeded on every start, which
-  keeps discovery and replay deterministic. H2 console: `http://localhost:8080/h2-console`.
+- The app stores data in PostgreSQL. Seed members come from a Flyway migration, so
+  `docker compose down -v` returns to a known state. Replays don't depend on a clean database:
+  account numbers are extracted as outputs, not asserted.
+- The React frontend keeps the old pages' URLs, element ids, button/link text, `.banner.*`
+  classes and `<th>`/`<td>` tables, so artifacts recorded against the server-rendered version
+  replay unchanged. While it is fetching, it sets `<html data-app-state="busy">`, and replay waits
+  for that to clear after each step (see REPORT §1).
+- Running on Linux / AWS: see [`deploy/ec2/README.md`](deploy/ec2/README.md).
 - Secrets are never committed or persisted: sensitive inputs are redacted from all evidence, and
   the artifact contract *requires* password-like inputs to be marked sensitive and redacted.
 - No real bank, real credentials, or real PII is used anywhere. The target is a local mock only.

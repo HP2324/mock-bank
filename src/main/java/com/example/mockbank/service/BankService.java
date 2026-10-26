@@ -1,6 +1,8 @@
 package com.example.mockbank.service;
 
 import com.example.mockbank.model.Account;
+import com.example.mockbank.model.AuditEvent;
+import com.example.mockbank.model.AuditEventType;
 import com.example.mockbank.model.Member;
 
 import java.math.BigDecimal;
@@ -10,9 +12,9 @@ import java.util.Optional;
 public interface BankService {
     Optional<Member> findMember(String memberId);
 
-    Account openSubAccount(String memberId, String productName, BigDecimal initialDeposit);
+    Account openSubAccount(String operatorId, String memberId, String productName, BigDecimal initialDeposit);
 
-    List<String> auditEvents();
+    List<AuditEvent> recentAuditEvents(int limit);
 
-    void audit(String event);
+    AuditEvent audit(AuditEventType type, String operatorId, String memberId, String message);
 }

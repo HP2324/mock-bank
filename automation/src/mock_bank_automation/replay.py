@@ -85,6 +85,7 @@ def replay_artifact(
             try:
                 for step in artifact.steps:
                     _execute_step(page, step, artifact, artifact.inputs, base_url)
+                    wait_for_app_settled(page, step.id, timeout_ms)
                     step_log.append(StepLog(step_id=step.id, action=step.action, status="completed"))
 
                     outcome = _match_expected_outcome(page, artifact.expected_outcomes)
@@ -227,6 +228,19 @@ def _execute_step(page, step: ReplayStep, artifact: CapabilityArtifact, inputs: 
             raise ReplayFailure(step.id, f"Unsupported action {step.action!r}.")
     except (PlaywrightError, PlaywrightTimeoutError) as exc:
         raise ReplayFailure(step.id, str(exc)) from exc
+
+
+# Single-page apps render after their fetches resolve, so a banner can appear after a click has
+# already returned. The mock bank marks <html data-app-state="busy"> while it is loading and
+# applying data; pages without the attribute (server-rendered apps) count as settled immediately.
+APP_SETTLED_SCRIPT = "() => document.documentElement.dataset.appState !== 'busy'"
+
+
+def wait_for_app_settled(page, step_id: str, timeout_ms: int) -> None:
+    try:
+        page.wait_for_function(APP_SETTLED_SCRIPT, timeout=timeout_ms)
+    except (PlaywrightError, PlaywrightTimeoutError) as exc:
+        raise ReplayFailure(step_id, f"Page did not finish loading after this step: {exc}") from exc
 
 
 def _match_expected_outcome(page, rules: list[OutcomeRule]) -> OutcomeRule | None:

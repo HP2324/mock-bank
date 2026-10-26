@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Entity
 @Table(name = "accounts")
@@ -20,6 +21,7 @@ public class AccountEntity {
     private String accountNumber;
     private String accountType;
     private BigDecimal balance;
+    private Instant openedAt;
 
     @ManyToOne
     @JoinColumn(name = "member_id", nullable = false)
@@ -28,10 +30,11 @@ public class AccountEntity {
     protected AccountEntity() {
     }
 
-    public AccountEntity(String accountNumber, String accountType, BigDecimal balance) {
+    public AccountEntity(String accountNumber, String accountType, BigDecimal balance, Instant openedAt) {
         this.accountNumber = accountNumber;
         this.accountType = accountType;
         this.balance = balance;
+        this.openedAt = openedAt;
     }
 
     public Long getId() {
@@ -48,6 +51,10 @@ public class AccountEntity {
 
     public BigDecimal getBalance() {
         return balance;
+    }
+
+    public Instant getOpenedAt() {
+        return openedAt;
     }
 
     public void setMember(MemberEntity member) {

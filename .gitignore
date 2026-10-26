@@ -15,3 +15,10 @@ automation/.pytest_cache/
 # NOTE: /evidence/ and /automation/artifacts/ are intentionally committed.
 # They are graded deliverables (the discovery + replay demonstration and the
 # saved capability artifacts). Do not ignore them.
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Local secrets for docker compose (e.g. POSTGRES_PASSWORD on a server)
+.env

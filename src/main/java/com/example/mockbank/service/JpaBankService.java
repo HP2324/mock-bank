@@ -1,31 +1,45 @@
 package com.example.mockbank.service;
 
+import com.example.mockbank.audit.AuditEventRecorded;
 import com.example.mockbank.entity.AccountEntity;
 import com.example.mockbank.entity.AuditEventEntity;
 import com.example.mockbank.entity.MemberEntity;
 import com.example.mockbank.model.Account;
+import com.example.mockbank.model.AuditEvent;
+import com.example.mockbank.model.AuditEventType;
 import com.example.mockbank.model.Member;
 import com.example.mockbank.repository.AuditEventRepository;
 import com.example.mockbank.repository.MemberRepository;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class JpaBankService implements BankService {
-    private static final DateTimeFormatter AUDIT_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     private final MemberRepository memberRepository;
     private final AuditEventRepository auditEventRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final Clock clock;
 
-    public JpaBankService(MemberRepository memberRepository, AuditEventRepository auditEventRepository) {
+    public JpaBankService(
+            MemberRepository memberRepository,
+            AuditEventRepository auditEventRepository,
+            ApplicationEventPublisher eventPublisher,
+            Clock clock
+    ) {
         this.memberRepository = memberRepository;
         this.auditEventRepository = auditEventRepository;
+        this.eventPublisher = eventPublisher;
+        this.clock = clock;
     }
 
     @Override
@@ -36,30 +50,47 @@ public class JpaBankService implements BankService {
 
     @Override
     @Transactional
-    public Account openSubAccount(String memberId, String productName, BigDecimal initialDeposit) {
+    public Account openSubAccount(String operatorId, String memberId, String productName, BigDecimal initialDeposit) {
         MemberEntity member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown member: " + memberId));
-        String prefix = productName.toUpperCase().startsWith("SAV") ? "SAV" : "SUB";
-        String number = prefix + "-" + memberId.substring(memberId.length() - 3) + "-" + (member.getAccounts().size() + 1);
-        AccountEntity account = new AccountEntity(number, productName, initialDeposit);
+        if (!member.canOpenSubAccount()) {
+            throw new IllegalStateException("Member " + memberId + " is restricted from opening sub-accounts.");
+        }
+        String number = AccountNumbers.next(memberId, productName, member.getAccounts().size());
+        AccountEntity account = new AccountEntity(number, productName, initialDeposit, now());
         member.addAccount(account);
         memberRepository.save(member);
-        audit("Opened " + productName + " " + account.getAccountNumber() + " for member " + memberId);
+        record(AuditEventType.SUBACCOUNT_OPENED, operatorId, memberId, number,
+                "Opened " + productName + " " + number + " for member " + memberId);
         return toAccount(account);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> auditEvents() {
-        return auditEventRepository.findAllByOrderByCreatedAtDescIdDesc().stream()
-                .map(event -> event.getCreatedAt().format(AUDIT_TIME) + " - " + event.getMessage())
+    public List<AuditEvent> recentAuditEvents(int limit) {
+        return auditEventRepository.findByOrderByCreatedAtDescIdDesc(Limit.of(limit)).stream()
+                .map(this::toAuditEvent)
                 .toList();
     }
 
     @Override
     @Transactional
-    public void audit(String event) {
-        auditEventRepository.save(new AuditEventEntity(LocalDateTime.now(), event));
+    public AuditEvent audit(AuditEventType type, String operatorId, String memberId, String message) {
+        return record(type, operatorId, memberId, null, message);
+    }
+
+    private AuditEvent record(AuditEventType type, String operatorId, String memberId, String accountNumber, String message) {
+        AuditEventEntity saved = auditEventRepository.save(new AuditEventEntity(
+                UUID.randomUUID(), type, operatorId, memberId, accountNumber, message, now()));
+        AuditEvent event = toAuditEvent(saved);
+        // Delivered to Kafka by KafkaAuditEventPublisher only after this transaction commits.
+        eventPublisher.publishEvent(new AuditEventRecorded(event));
+        return event;
+    }
+
+    private Instant now() {
+        // PostgreSQL stores microseconds; truncate so the returned value equals the stored one.
+        return clock.instant().truncatedTo(ChronoUnit.MICROS);
     }
 
     private Member toMember(MemberEntity entity) {
@@ -74,5 +105,17 @@ public class JpaBankService implements BankService {
 
     private Account toAccount(AccountEntity entity) {
         return new Account(entity.getAccountNumber(), entity.getAccountType(), entity.getBalance());
+    }
+
+    private AuditEvent toAuditEvent(AuditEventEntity entity) {
+        return new AuditEvent(
+                entity.getEventId(),
+                entity.getEventType(),
+                entity.getOperatorId(),
+                entity.getMemberId(),
+                entity.getAccountNumber(),
+                entity.getMessage(),
+                entity.getCreatedAt()
+        );
     }
 }

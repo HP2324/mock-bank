@@ -18,7 +18,7 @@ business outcomes, and a human-approval handoff.
 Two processes, one clean seam between them.
 
 ```
-                 target surface (chosen: legacy-style server-rendered web app)
+                 target surface (React SPA over a Spring Boot + PostgreSQL API)
                  ┌───────────────────────────────────────────────┐
                  │  Spring Boot "mock bank" back office (:8080)    │
                  │  login → member search → detail → open subacct  │
@@ -63,9 +63,17 @@ Two processes, one clean seam between them.
   makes determinism observable. The abstractions (surface adapter, locator strategy, artifact
   schema) are designed so this *could* be split into services later without reshaping the data.
 - **Language/runtime:** Python for the agent/replay layer (Playwright + pydantic for a typed,
-  self-validating schema); Java/Spring Boot for the target app only because it makes a
-  convincingly *legacy* server-rendered surface (full-page reloads, table-based markup,
-  server-side redirects via a tiny script shim) rather than a clean SPA.
+  self-validating schema); Java/Spring Boot + PostgreSQL for the target app, with a React
+  frontend. The frontend was rebuilt from server-rendered pages without changing the artifact
+  contract: same routes, element ids, link/button text, banner classes and label/value tables, so
+  every saved artifact replays unchanged (checked by `automation/scripts/replay_smoke.py` in CI).
+- **App-settled signal.** A server-rendered page is complete when Playwright's click returns; an
+  SPA renders *after* its fetch resolves, so an outcome check right after a click could miss the
+  banner that appears 50 ms later. The app keeps `<html data-app-state>` at `busy` from the
+  moment a click or page load starts work until the result is committed to the DOM, and both
+  replay and discovery wait for it to leave `busy` after every step. Pages without the
+  attribute are treated as settled at once, so the executor still works against non-SPA
+  surfaces.
 
 ---
 

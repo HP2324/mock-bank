@@ -27,8 +27,10 @@ In another terminal:
 
 ```bash
 cd /Users/harshitpotluri/mock-bank
-mvn spring-boot:run
+docker compose up -d --build --wait    # PostgreSQL, Kafka, mock-bank on :8080, audit-consumer on :8081
 ```
+
+Or `docker compose up -d --wait postgres kafka` and then `mvn spring-boot:run` to run the app from source.
 
 ## Replay the happy path
 
@@ -37,7 +39,7 @@ cd /Users/harshitpotluri/mock-bank/automation
 source .venv/bin/activate
 PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation replay artifacts/examples/open_subaccount_happy_path.json \
   --base-url http://localhost:8080 \
-  --evidence-dir evidence
+  --evidence-dir ../evidence
 ```
 
 Expected result: a JSON result with `status: success`, the checkpoint `CONFIRM-SUBACCOUNT-CREATED`, and extracted output values for the new account.
@@ -61,7 +63,7 @@ The example folder includes several deterministic replay scenarios:
 Run any artifact with:
 
 ```bash
-PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation replay artifacts/examples/member_not_found.json --base-url http://localhost:8080 --evidence-dir evidence
+PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation replay artifacts/examples/member_not_found.json --base-url http://localhost:8080 --evidence-dir ../evidence
 ```
 
 Replay statuses:
@@ -80,7 +82,7 @@ The handoff artifact can now pause with Chromium still open, so a human operator
 ```bash
 PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation replay artifacts/examples/human_approval_required.json \
   --base-url http://localhost:8080 \
-  --evidence-dir evidence \
+  --evidence-dir ../evidence \
   --headed \
   --pause-on-handoff
 ```
@@ -97,7 +99,7 @@ Local deterministic draft, useful while learning or testing without an API key:
 mock-bank-automation discover "Open a sub-account for member 12345" \
   --provider local \
   --output artifacts/drafts/draft_from_goal.json \
-  --report evidence/discovery-report.json
+  --report ../evidence/discovery-report.json
 ```
 
 File-backed LLM simulation, useful for tests and debugging a model response:
@@ -107,7 +109,7 @@ mock-bank-automation discover "Open a sub-account for member 12345" \
   --provider file \
   --llm-response-file artifacts/examples/open_subaccount_happy_path.json \
   --output artifacts/drafts/draft_from_file_provider.json \
-  --report evidence/discovery-report.json
+  --report ../evidence/discovery-report.json
 ```
 
 OpenAI-backed discovery, useful once you are ready to try a real model-generated artifact:
@@ -118,7 +120,7 @@ mock-bank-automation discover "Open a sub-account for member 12345" \
   --provider openai \
   --model gpt-5 \
   --output artifacts/drafts/draft_from_llm.json \
-  --report evidence/discovery-report.json
+  --report ../evidence/discovery-report.json
 ```
 
 Controlled discovery now uses the same production artifact contract as replay. The LLM/provider is only a producer of candidate JSON; it is not trusted.
@@ -153,7 +155,7 @@ PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation discover-brow
   --provider scripted \
   --base-url http://localhost:8080 \
   --output artifacts/drafts/draft_from_browser_discovery.json \
-  --evidence-dir evidence \
+  --evidence-dir ../evidence \
   --headed
 ```
 
@@ -166,7 +168,7 @@ PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation discover-brow
   --model claude-sonnet-5 \
   --base-url http://localhost:8080 \
   --output artifacts/drafts/draft_from_claude.json \
-  --evidence-dir evidence \
+  --evidence-dir ../evidence \
   --headed
 ```
 
@@ -178,7 +180,7 @@ PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation discover-brow
   --model gpt-5 \
   --base-url http://localhost:8080 \
   --output artifacts/drafts/draft_from_llm.json \
-  --evidence-dir evidence \
+  --evidence-dir ../evidence \
   --headed
 ```
 
@@ -191,7 +193,7 @@ Artifacts can be valid while still being only `draft`. This is intentional: LLM 
 ```bash
 mock-bank-automation approve artifacts/drafts/draft_from_goal.json \
   --output artifacts/approved/approved_open_subaccount.json \
-  --report evidence/approval-report.json \
+  --report ../evidence/approval-report.json \
   --approved-by "Harshit" \
   --reason "Reviewed selectors, inputs, outputs, checkpoint, and safety policy."
 ```
@@ -201,7 +203,7 @@ Strict replay can then require approved artifacts:
 ```bash
 PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers mock-bank-automation replay artifacts/approved/approved_open_subaccount.json \
   --base-url http://localhost:8080 \
-  --evidence-dir evidence \
+  --evidence-dir ../evidence \
   --require-approved
 ```
 
