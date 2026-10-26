@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   backend:
-    name: mock-bank (unit + Testcontainers)
+    name: bank-api (unit + Testcontainers)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
           java-version: "17"
           cache: maven
       # Testcontainers starts PostgreSQL and Kafka using the runner's Docker engine.
-      - run: ./mvnw -B -DskipFrontend verify
+      - run: ./mvnw -B -DskipFrontend -pl services/bank-api verify
 
   audit-consumer:
     name: audit-consumer (unit + Testcontainers)
@@ -33,7 +33,7 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
-      - run: ./mvnw -B -f audit-consumer/pom.xml verify
+      - run: ./mvnw -B -pl services/audit-consumer verify
 
   frontend:
     name: frontend (Vitest + build)

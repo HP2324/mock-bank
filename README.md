@@ -20,10 +20,11 @@ The exercised goal is *"open a new sub-account for a member and reach the confir
 
 | Read this | For |
 |---|---|
-| [`REPORT.md`](REPORT.md) | Design write-up: architecture, artifact schema, determinism, data and events, safety, testing, cuts |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | Design write-up: architecture, artifact schema, determinism, data and events, safety, testing, cuts |
 | [`automation/README.md`](automation/README.md) | Every automation command, provider and flag |
-| [`evidence/README.md`](evidence/README.md) | A real Claude discovery run, replays and a human handoff, with screenshots |
-| [`deploy/ec2/README.md`](deploy/ec2/README.md) | Running the stack on Ubuntu / AWS EC2 |
+| [`automation/evidence/README.md`](automation/evidence/README.md) | A real Claude discovery run, replays and a human handoff, with screenshots |
+| [`docs/deploy-ec2.md`](docs/deploy-ec2.md) | Running the stack on Ubuntu / AWS EC2 |
+| http://localhost:8080/swagger-ui.html | Interactive API docs (once the stack is running) |
 
 ---
 
@@ -54,27 +55,32 @@ The exercised goal is *"open a new sub-account for a member and reach the confir
 ## Repository layout
 
 ```
-README.md, REPORT.md      this guide and the design write-up
-docker-compose.yml        PostgreSQL, Kafka, mock-bank, audit-consumer
-Dockerfile                mock-bank image (builds the React app, then the jar)
-pom.xml, src/             mock-bank Spring Boot API
-  main/java/com/example/mockbank/
-    api/                  JSON endpoints + typed error responses
-    service/              business rules (SubAccountPolicy) and JPA service
-    reporting/            ReportingRepository: hand-written SQL with joins
-    audit/                publishes committed audit events to Kafka
-    web/                  session handling, SPA routes, /logout, /debug/expire-session
-  main/resources/db/migration/   Flyway V1 schema, V2 seed data, V3 indexes
-  test/java/              unit tests (*Test) and Testcontainers integration tests (*IT)
-frontend/                 React + Vite staff console, Vitest tests
-audit-consumer/           Spring Boot Kafka consumer with its own database and tests
-automation/               Python discovery, artifact contract, replay engine, guardrails
+services/
+  bank-api/                 Spring Boot API for the staff console (Java 17)
+    src/main/java/io/github/hp2324/mockbank/
+      api/                  JSON endpoints + typed error responses
+      service/              business rules (SubAccountPolicy) and JPA service
+      reporting/            ReportingRepository: hand-written SQL with joins
+      audit/                publishes committed audit events to Kafka
+      web/                  session handling, SPA routes, /logout, /debug/expire-session
+      config/               OpenAPI (Swagger) and clock configuration
+    src/main/resources/db/migration/   Flyway V1 schema, V2 seed data, V3 indexes
+    src/test/java/          unit tests (*Test) and Testcontainers integration tests (*IT)
+    Dockerfile              builds the React app, then the jar (context: repository root)
+  audit-consumer/           Spring Boot Kafka consumer with its own database, tests and Dockerfile
+frontend/                   React + Vite staff console, Vitest tests
+automation/                 Python discovery, artifact contract, replay engine, guardrails
   artifacts/{examples,drafts,approved}/   saved capability artifacts
-  scripts/replay_smoke.py                 replays every artifact and checks its outcome
-evidence/                 committed demonstration runs (see evidence/README.md)
-docker/postgres/init/     creates the audit_consumer database on first start
-.github/workflows/ci.yml  CI pipeline
-deploy/ec2/               EC2 user-data script and guide
+  evidence/                 committed demonstration runs (see automation/evidence/README.md)
+  scripts/replay_smoke.py   replays every artifact and checks its outcome
+docs/                       DESIGN.md (design write-up), deploy-ec2.md
+deploy/ec2/user-data.sh     EC2 bootstrap script
+docker/postgres/init/       creates the audit_consumer database on first start
+.github/                    CI workflow and Dependabot config
+docker-compose.yml          PostgreSQL, Kafka, bank-api (service "mock-bank"), audit-consumer
+pom.xml                     parent pom: builds and tests both Java services
+Makefile                    everyday commands (`make help`)
+mvnw                        Maven wrapper; no Maven install needed
 ```
 
 ---
@@ -85,7 +91,7 @@ Needs Docker Desktop (or Docker Engine on Linux).
 
 ```bash
 git clone https://github.com/HP2324/mock-bank.git && cd mock-bank
-docker compose up -d --build --wait
+docker compose up -d --build --wait      # or: make up
 ```
 
 Then open **http://localhost:8080** and sign in with **`operator` / `password`**.
@@ -118,12 +124,25 @@ docker compose down                     # stop, keep data
 docker compose down -v                  # stop and reset to the Flyway seed data
 ```
 
+### Make shortcuts
+
+`make help` lists them all. The common ones:
+
+| Command | Does |
+|---|---|
+| `make up` / `make down` / `make reset` | Start the stack / stop it / wipe data and restart |
+| `make infra` | Only PostgreSQL and Kafka |
+| `make run` / `make run-consumer` | Run a service from source |
+| `make dev` | Vite dev server with hot reload |
+| `make test` / `make verify` | Fast tests / all Java tests including Testcontainers |
+| `make replay` | Replay every saved artifact against the running app |
+
 ### The app from source, infrastructure in Docker
 
 ```bash
 docker compose up -d --wait postgres kafka
-./mvnw spring-boot:run                   # builds the React app into the jar, serves :8080
-./mvnw -f audit-consumer/pom.xml spring-boot:run   # optional, serves :8081
+./mvnw -pl services/bank-api spring-boot:run         # builds the React app, serves :8080
+./mvnw -pl services/audit-consumer spring-boot:run   # optional, serves :8081
 ```
 
 **From IntelliJ:** running `MockBankApplication` also works. The IDE skips Maven's frontend
@@ -178,6 +197,11 @@ The mock produces each automation state on demand:
 
 ## API
 
+**Interactive docs:** with the app running, open **http://localhost:8080/swagger-ui.html**. Use
+`POST /api/session` there to sign in, and "Try it out" works on every other endpoint. The raw
+OpenAPI spec is at `/v3/api-docs`. audit-consumer has its own at
+http://localhost:8081/swagger-ui.html.
+
 The React app talks to these endpoints. Signed-in endpoints use the `JSESSIONID` session cookie.
 Errors always come back as `{"code": "...", "message": "..."}`.
 
@@ -209,10 +233,11 @@ Flyway owns the schema, and Hibernate only validates that the entities still mat
 | `V2__seed_demo_members.sql` | The demo members and accounts the automation artifacts use |
 | `V3__index_audit_events_for_reporting.sql` | Indexes behind the reporting queries |
 
-To add a schema change, create `V4__describe_change.sql` in `src/main/resources/db/migration/`.
+To add a schema change, create `V4__describe_change.sql` in
+`services/bank-api/src/main/resources/db/migration/`.
 Never edit a migration that has already run.
 
-The reports in [`ReportingRepository`](src/main/java/com/example/mockbank/reporting/ReportingRepository.java)
+The reports in [`ReportingRepository`](services/bank-api/src/main/java/io/github/hp2324/mockbank/reporting/ReportingRepository.java)
 are plain SQL:
 
 - **member portfolios:** `members LEFT JOIN accounts`, grouped, so members with no accounts still appear
@@ -254,7 +279,7 @@ docker compose exec kafka /opt/kafka/bin/kafka-console-consumer.sh \
 ```
 
 If Kafka is down, the operator's action still succeeds and the failed publish is logged. The
-database row is the source of truth (see REPORT §5 for the trade-off). Set `KAFKA_ENABLED=false`
+database row is the source of truth (see [DESIGN §5](docs/DESIGN.md#5-audit-events-kafka) for the trade-off). Set `KAFKA_ENABLED=false`
 to run without Kafka.
 
 ---
@@ -271,7 +296,7 @@ PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers python -m playwright install chrom
 ```
 
 Run the commands below from `automation/` with the venv active and the app running on :8080.
-They write evidence under the repo-root `evidence/` folder.
+They write evidence to `automation/evidence/`.
 
 ### Demo path: discover → approve → replay
 
@@ -285,19 +310,19 @@ mock-bank-automation discover-browser "Open a sub-account for member 12345" \
   --provider anthropic --model claude-sonnet-5 \
   --base-url http://localhost:8080 \
   --output artifacts/drafts/draft_from_claude.json \
-  --evidence-dir ../evidence --headed
+  --evidence-dir evidence --headed
 
 # 2) APPROVE: a human promotes the validated draft.
 mock-bank-automation approve artifacts/drafts/draft_from_claude.json \
   --output artifacts/approved/approved_open_subaccount.json \
-  --report ../evidence/approval-report.json \
+  --report evidence/approval-report.json \
   --approved-by "Harshit" \
   --reason "Reviewed selectors, inputs, outputs, checkpoint, and safety policy."
 
 # 3) REPLAY (no LLM): run the approved artifact and verify the checkpoint.
 PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers \
 mock-bank-automation replay artifacts/approved/approved_open_subaccount.json \
-  --base-url http://localhost:8080 --evidence-dir ../evidence --require-approved
+  --base-url http://localhost:8080 --evidence-dir evidence --require-approved
 ```
 
 For OpenAI, use `--provider openai` with an OpenAI model and `OPENAI_API_KEY`.
@@ -313,14 +338,14 @@ then approve and replay that file as above.
 
 ```bash
 # Business outcomes: legitimate results, not crashes
-mock-bank-automation replay artifacts/examples/member_not_found.json  --base-url http://localhost:8080 --evidence-dir ../evidence
-mock-bank-automation replay artifacts/examples/invalid_member_id.json --base-url http://localhost:8080 --evidence-dir ../evidence
-mock-bank-automation replay artifacts/examples/permission_denied.json --base-url http://localhost:8080 --evidence-dir ../evidence
+mock-bank-automation replay artifacts/examples/member_not_found.json  --base-url http://localhost:8080 --evidence-dir evidence
+mock-bank-automation replay artifacts/examples/invalid_member_id.json --base-url http://localhost:8080 --evidence-dir evidence
+mock-bank-automation replay artifacts/examples/permission_denied.json --base-url http://localhost:8080 --evidence-dir evidence
 
 # Human handoff: a deposit over $5,000 pauses on the live browser session
 PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers \
 mock-bank-automation replay artifacts/examples/human_approval_required.json \
-  --base-url http://localhost:8080 --evidence-dir ../evidence --headed --pause-on-handoff
+  --base-url http://localhost:8080 --evidence-dir evidence --headed --pause-on-handoff
 # At HANDOFF REQUIRED: in Chromium, change Initial deposit to 100.00, click "Open sub-account",
 # then press Enter in the terminal to resume verification.
 ```
@@ -340,7 +365,7 @@ The frontend is React, but it keeps what the saved artifacts select on: the same
 ids (`#memberId`, `#productName`, `#confirmation-code`, …), button and link text,
 `.banner.success|warning|error` classes, and `<th>`/`<td>` label tables. While it is loading or
 applying data, it sets `<html data-app-state="busy">`. Replay and discovery wait for that to clear
-after every step (REPORT §3). Vitest tests in `frontend/src/__tests__/domContract.test.jsx` fail if
+after every step ([DESIGN §3](docs/DESIGN.md#3-determinism--error-handling)). Vitest tests in `frontend/src/__tests__/domContract.test.jsx` fail if
 this contract drifts.
 
 ---
@@ -349,13 +374,14 @@ this contract drifts.
 
 | Suite | Command | What it covers |
 |---|---|---|
-| mock-bank unit | `./mvnw -DskipFrontend test` | Sub-account rules, account numbering, JPA service (Mockito), Kafka publisher, MockMvc controller tests |
-| mock-bank integration | `./mvnw -DskipFrontend verify` | Testcontainers PostgreSQL + Kafka: Flyway migrations and constraints, JPA, reporting SQL, full API flow, publish-after-commit |
-| audit-consumer | `./mvnw -f audit-consumer/pom.xml verify` | Payload parsing, REST API, and with Testcontainers: idempotent storage, summary SQL, dead-letter routing |
+| bank-api unit | `./mvnw -DskipFrontend -pl services/bank-api test` | Sub-account rules, account numbering, JPA service (Mockito), Kafka publisher, MockMvc controller tests |
+| bank-api integration | `./mvnw -DskipFrontend -pl services/bank-api verify` | Testcontainers PostgreSQL + Kafka: Flyway migrations and constraints, JPA, reporting SQL, full API flow, publish-after-commit |
+| audit-consumer | `./mvnw -pl services/audit-consumer verify` | Payload parsing, REST API, and with Testcontainers: idempotent storage, summary SQL, dead-letter routing |
 | frontend | `cd frontend && npm test` | API client, formatting, DOM contract used by the artifacts |
 | automation | `cd automation && pytest` | Artifact contract, guardrails, discovery, replay, approval, evidence, settle wait |
 | end to end | `python automation/scripts/replay_smoke.py` | Every saved artifact against the running stack |
 
+Run everything Java at once from the root with `./mvnw -DskipFrontend verify` (or `make verify`).
 Integration tests (`*IT.java`) need Docker running. `-DskipFrontend` skips the React build, which
 the Java tests don't need.
 
@@ -373,10 +399,10 @@ Ubuntu:
 ## Deploying to Linux / AWS EC2
 
 The stack runs the same on any Linux host with Docker. CI already exercises it on Ubuntu.
-[`deploy/ec2/`](deploy/ec2/) has a user-data script for Ubuntu 24.04 that installs Docker,
+[`deploy/ec2/user-data.sh`](deploy/ec2/user-data.sh) is a user-data script for Ubuntu 24.04 that installs Docker,
 clones this repo, sets a random database password and starts the stack. The instance exposes
 only SSH, and you reach the app through an SSH tunnel. See
-[`deploy/ec2/README.md`](deploy/ec2/README.md).
+[`docs/deploy-ec2.md`](docs/deploy-ec2.md).
 
 ---
 
@@ -396,7 +422,7 @@ only SSH, and you reach the app through an SSH tunnel. See
 
 | Symptom | Fix |
 |---|---|
-| `No static resource index.html` | The app was built without the frontend. Run `cd frontend && npm run build`, or start it with `./mvnw spring-boot:run`. |
+| `No static resource index.html` | The app was built without the frontend. Run `cd frontend && npm run build`, or start it with `make run`. |
 | Page doesn't match recent code / two apps on 8080 | `docker compose stop mock-bank` before running from Maven or IntelliJ |
 | `Connection refused` to 5432 or 9092 | `docker compose up -d --wait postgres kafka` |
 | Integration tests can't find Docker | Start Docker Desktop. Testcontainers needs a running engine. |
@@ -406,7 +432,7 @@ only SSH, and you reach the app through an SSH tunnel. See
 
 ## Notes
 
-- **Evidence predates the React frontend.** The runs in `evidence/` were recorded in September
+- **Evidence predates the React frontend.** The runs in `automation/evidence/` were recorded in September
   2026 against the earlier server-rendered pages. The same artifacts replay unchanged against
   the React app; CI checks this on every push.
 - **Secrets:** sensitive inputs are redacted from all evidence, and the artifact contract

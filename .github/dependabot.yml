@@ -4,7 +4,7 @@ version: 2
 
 updates:
   - package-ecosystem: maven
-    directories: ["/", "/audit-consumer"]
+    directories: ["/services/bank-api", "/services/audit-consumer"]
     schedule:
       interval: weekly
     groups:
@@ -28,7 +28,7 @@ updates:
         update-types: [minor, patch]
 
   - package-ecosystem: docker
-    directories: ["/", "/audit-consumer"]
+    directories: ["/services/bank-api", "/services/audit-consumer"]
     schedule:
       interval: weekly
 
