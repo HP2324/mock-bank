@@ -6,7 +6,7 @@ RUN mvn -B -q dependency:go-offline
 COPY src ./src
 RUN mvn -B -q -DskipTests package
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:25-jre
 RUN useradd --system --uid 10001 consumer
 WORKDIR /app
 COPY --from=build /build/target/audit-consumer-0.0.1-SNAPSHOT.jar app.jar
