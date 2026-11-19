@@ -18,6 +18,11 @@ The system automates a **mock retail-bank back office** with a production-style 
 
 The exercised goal is *"open a new sub-account for a member and reach the confirmation screen."*
 
+![Staff console demo: sign in, look up a member, open a sub-account, hit the $5,000 human-approval rule, then the audit log, SQL reports, the Kafka consumer's copy of the events and Swagger UI](docs/demo.gif)
+
+<sub>A 60-second tour of the running stack, recorded by
+[`automation/scripts/record_demo.py`](automation/scripts/record_demo.py).</sub>
+
 | Read this | For |
 |---|---|
 | [`docs/DESIGN.md`](docs/DESIGN.md) | Design write-up: architecture, artifact schema, determinism, data and events, safety, testing, cuts |
@@ -30,24 +35,40 @@ The exercised goal is *"open a new sub-account for a member and reach the confir
 
 ## Architecture
 
-```
-                         ┌──────────────── automation/ (Python) ────────────────┐
-                         │  discover-browser  ── LLM picks one action per turn   │
-                         │  approve           ── human promotes draft → approved │
-                         │  replay            ── no LLM; checkpoint + typed output│
-                         └───────────────┬──────────────────────────────────────┘
-                                         │ Playwright (Chromium)
-                                         ▼
- ┌───────────── mock-bank :8080 ─────────────┐        ┌──────── PostgreSQL ────────┐
- │ React SPA  ──/api──▶  Spring Boot API      │──JPA──▶│ db mockbank (Flyway V1–V3) │
- │                       │ audit row commits  │──SQL──▶│  members, accounts,        │
- └───────────────────────┼────────────────────┘        │  audit_events              │
-                         ▼                             │                            │
-            Kafka topic mockbank.audit-events          │ db audit_consumer          │
-                         │                             │  consumed_audit_events     │
-                         ▼                             └────────────▲───────────────┘
-            audit-consumer :8081 ───────────────────────────────────┘
-                         └── unreadable messages ──▶ mockbank.audit-events.DLT
+```mermaid
+flowchart TB
+    subgraph automation["automation/ (Python)"]
+        direction LR
+        discover["discover-browser<br/>LLM picks one action per turn"]
+        approve["approve<br/>human promotes draft to approved"]
+        replay["replay<br/>no LLM, checkpoint + typed output"]
+        discover --> approve --> replay
+    end
+
+    staff(["Staff operator"])
+    browser["Chromium<br/>(Playwright)"]
+    automation -- drives --> browser
+
+    subgraph bankapi["bank-api :8080"]
+        spa["React SPA"]
+        api["JSON API /api/**"]
+        spa -- "fetch + JSESSIONID cookie" --> api
+    end
+    staff --> spa
+    browser --> spa
+
+    mockbankdb[("PostgreSQL: mockbank<br/>members, accounts, audit_events<br/>Flyway V1-V3")]
+    api -- "JPA + reporting SQL" --> mockbankdb
+
+    topic{{"Kafka topic<br/>mockbank.audit-events"}}
+    api -- "audit event, after commit" --> topic
+
+    consumer["audit-consumer :8081"]
+    topic --> consumer
+    consumerdb[("PostgreSQL: audit_consumer<br/>consumed_audit_events")]
+    consumer -- "idempotent insert" --> consumerdb
+    dlt{{"mockbank.audit-events.DLT"}}
+    consumer -- "unreadable messages" --> dlt
 ```
 
 ---
@@ -73,6 +94,7 @@ automation/                 Python discovery, artifact contract, replay engine, 
   artifacts/{examples,drafts,approved}/   saved capability artifacts
   evidence/                 committed demonstration runs (see automation/evidence/README.md)
   scripts/replay_smoke.py   replays every artifact and checks its outcome
+  scripts/record_demo.py    records docs/demo.gif from the running stack
 docs/                       DESIGN.md (design write-up), deploy-ec2.md
 deploy/ec2/user-data.sh     EC2 bootstrap script
 docker/postgres/init/       creates the audit_consumer database on first start
